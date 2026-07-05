@@ -129,7 +129,7 @@
             border-left: 4px solid #1abc9c;
             border-radius: 4px;
             display: none;
-            word-wrap: break-word; /* Ensures massive numbers don't break the layout */
+            word-wrap: break-word; 
         }
         .results p {
             margin: 5px 0;
@@ -288,11 +288,13 @@
         }
         document.getElementById("defaultOpen").click();
 
-        // --- CALCULATION FUNCTIONS (BIGINT UPGRADED) ---
+        // --- CALCULATION FUNCTIONS ---
         function calcGlycolysis() {
             let val = document.getElementById('gly-pyr').value;
-            if (val === "") return; 
-            
+            if (val === "") {
+                document.getElementById('gly-results').style.display = 'none';
+                return;
+            }
             try {
                 let n = BigInt(val);
                 if (n < 1n) { alert("Incorrect input! Please use positive whole numbers."); return; }
@@ -302,15 +304,15 @@
                 document.getElementById('gly-nadh').innerText = n.toString();
                 document.getElementById('gly-net-atp').innerText = netAtp.toString(); 
                 document.getElementById('gly-results').style.display = 'block';
-            } catch (e) {
-                alert("Incorrect input! Please use whole numbers only.");
-            }
+            } catch (e) { alert("Incorrect input! Please use whole numbers only."); }
         }
 
         function calcLink() {
             let val = document.getElementById('link-pyr').value;
-            if (val === "") return;
-            
+            if (val === "") {
+                document.getElementById('link-results').style.display = 'none';
+                return;
+            }
             try {
                 let n = BigInt(val);
                 if (n < 1n) { alert("Incorrect input!"); return; }
@@ -319,15 +321,15 @@
                 document.getElementById('link-nadh').innerText = n.toString();
                 document.getElementById('link-co2').innerText = n.toString();
                 document.getElementById('link-results').style.display = 'block';
-            } catch (e) {
-                alert("Incorrect input! Please use whole numbers only.");
-            }
+            } catch (e) { alert("Incorrect input! Please use whole numbers only."); }
         }
 
         function calcKrebs() {
             let val = document.getElementById('kreb-acetyl').value;
-            if (val === "") return;
-            
+            if (val === "") {
+                document.getElementById('kreb-results').style.display = 'none';
+                return;
+            }
             try {
                 let n = BigInt(val);
                 if (n < 1n) { alert("Incorrect input!"); return; }
@@ -337,15 +339,17 @@
                 document.getElementById('kreb-co2').innerText = (n * 2n).toString();
                 document.getElementById('kreb-atp').innerText = n.toString();
                 document.getElementById('kreb-results').style.display = 'block';
-            } catch (e) {
-                alert("Incorrect input! Please use whole numbers only.");
-            }
+            } catch (e) { alert("Incorrect input! Please use whole numbers only."); }
         }
 
         function calcETS() {
             let valN = document.getElementById('ets-nadh').value;
             let valM = document.getElementById('ets-fadh').value;
-            if (valN === "" || valM === "") return; 
+            
+            if (valN === "" || valM === "") {
+                document.getElementById('ets-results').style.display = 'none';
+                return; 
+            }
             
             try {
                 let n = BigInt(valN);
@@ -353,11 +357,9 @@
                 
                 if (n < 1n || m < 1n) { alert("Incorrect input!"); return; }
 
-                // Whole number proton math
                 document.getElementById('ets-nadh-p').innerText = (n * 10n).toString();
                 document.getElementById('ets-fadh-p').innerText = (m * 6n).toString();
 
-                // Custom logic to handle decimals with BigInts
                 function formatBigDecimal(tenths) {
                     let whole = tenths / 10n;
                     let remainder = tenths % 10n;
@@ -365,36 +367,43 @@
                     return whole.toString() + "." + remainder.toString();
                 }
 
-                // Calculate in "tenths" (e.g., 2.5 becomes 25)
                 let nadhAtpTenths = n * 25n;
                 let fadhAtpTenths = m * 15n;
                 let totalAtpTenths = nadhAtpTenths + fadhAtpTenths;
 
-                // Format back to decimal string for display
                 document.getElementById('ets-nadh-atp').innerText = formatBigDecimal(nadhAtpTenths);
                 document.getElementById('ets-fadh-atp').innerText = formatBigDecimal(fadhAtpTenths);
                 document.getElementById('ets-total-atp').innerText = formatBigDecimal(totalAtpTenths);
 
                 document.getElementById('ets-results').style.display = 'block';
-            } catch (e) {
-                alert("Incorrect input! Please use whole numbers only.");
-            }
+            } catch (e) { alert("Incorrect input! Please use whole numbers only."); }
         }
+
+        // --- REAL-TIME HIDING WHEN CLEARED ---
+        document.getElementById('gly-pyr').addEventListener('input', function() { 
+            if (this.value === "") document.getElementById('gly-results').style.display = 'none'; 
+        });
+        document.getElementById('link-pyr').addEventListener('input', function() { 
+            if (this.value === "") document.getElementById('link-results').style.display = 'none'; 
+        });
+        document.getElementById('kreb-acetyl').addEventListener('input', function() { 
+            if (this.value === "") document.getElementById('kreb-results').style.display = 'none'; 
+        });
+        document.getElementById('ets-nadh').addEventListener('input', function() { 
+            if (this.value === "" || document.getElementById('ets-fadh').value === "") document.getElementById('ets-results').style.display = 'none'; 
+        });
+        document.getElementById('ets-fadh').addEventListener('input', function() { 
+            if (this.value === "" || document.getElementById('ets-nadh').value === "") document.getElementById('ets-results').style.display = 'none'; 
+        });
 
         // --- ENTER KEY SUPPORT ---
         document.getElementById("gly-pyr").addEventListener("keypress", function(event) { if (event.key === "Enter") calcGlycolysis(); });
         document.getElementById("link-pyr").addEventListener("keypress", function(event) { if (event.key === "Enter") calcLink(); });
         document.getElementById("kreb-acetyl").addEventListener("keypress", function(event) { if (event.key === "Enter") calcKrebs(); });
         
-        // ** NEW AUTO-FOCUS LOGIC FOR ETS **
         document.getElementById("ets-nadh").addEventListener("keypress", function(event) { 
-            if (event.key === "Enter") {
-                // When you press enter on NADH, it moves the cursor to FADH2
-                document.getElementById("ets-fadh").focus();
-            } 
+            if (event.key === "Enter") document.getElementById("ets-fadh").focus(); 
         });
-        
-        // When you press enter on FADH2, it calculates the result
         document.getElementById("ets-fadh").addEventListener("keypress", function(event) { if (event.key === "Enter") calcETS(); });
 
         
