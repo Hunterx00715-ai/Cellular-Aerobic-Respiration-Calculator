@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cellular Aerobic Respiration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e1f5fe; 
+            color: #333;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative; 
+        }
+        
+        /* --- CANVAS BACKGROUND STYLE --- */
+        #bioCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1; 
+            pointer-events: none; 
+            opacity: 0.6; 
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            position: relative; 
+        }
+        
+        /* --- TAB NAVIGATION STYLES --- */
+        .tab {
+            overflow: hidden;
+            background-color: #2c3e50;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .tab button {
+            background-color: inherit;
+            color: #ecf0f1;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 16px;
+            font-weight: bold;
+            flex-grow: 1;
+        }
+        .tab button:hover {
+            background-color: #34495e;
+        }
+        .tab button.active {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        /* --- CONTENT SECTION STYLES --- */
+        .tabcontent {
+            display: none; 
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.95); 
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            animation: fadeEffect 0.5s;
+            position: relative; 
+        }
+        @keyframes fadeEffect {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        h2 {
+            color: #2980b9;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .bio-info {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button.calc-btn {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+        button.calc-btn:hover {
+            background-color: #2ecc71;
+        }
+        .results {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e8f8f5;
+            border-left: 4px solid #1abc9c;
+            border-radius: 4px;
+            display: none;
+            word-wrap: break-word; /* Ensures massive numbers don't break the layout */
+        }
+        .results p {
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        .kreb-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bioCanvas"></canvas>
+
+    <h1>Cellular Aerobic Respiration</h1>
+
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'Glycolysis')" id="defaultOpen">Glycolysis</button>
+        <button class="tablinks" onclick="openTab(event, 'LinkReaction')">Link Reaction</button>
+        <button class="tablinks" onclick="openTab(event, 'KrebsCycle')">Krebs Cycle</button>
+        <button class="tablinks" onclick="openTab(event, 'ETS')">ETS</button>
+    </div>
+
+    <div id="Glycolysis" class="tabcontent">
+        <h2>Glycolysis</h2>
+        <div class="bio-info">
+            <p><strong>"Respiration" -> "Glycolysis"</strong></p>
+            <p>The net gain ATP per "Glucose" in "Glycolysis" are 2 ATPs by substrate level phosphorylation.<br>
+            The total NADH+H+ produced per "Glucose" in glycolysis are 2 NADH+H+.<br>
+            Total ATP produced per glucose by substrate level phosphorylation is 4 ATPs.<br>
+            Total pyruvates per glucose are 2 pyruvates.</p>
+        </div>
+
+        <div class="input-group">
+            <label>Enter Number of Pyruvates:</label>
+            <input type="number" id="gly-pyr" placeholder="Enter value here..." min="1">
+        </div>
+        <button class="calc-btn" onclick="calcGlycolysis()">Calculate</button>
+        <div class="results" id="gly-results">
+            <p>Total ATPs produced: <span id="gly-atp">0</span></p>
+            <p>Total NADH+H+ produced: <span id="gly-nadh">0</span></p>
+            <p style="color: #c0392b;">Net gain of ATPs: <span id="gly-net-atp">0</span></p>
+        </div>
+    </div>
+
+    <div id="LinkReaction" class="tabcontent">
+        <h2>Link Reaction</h2>
+        <div class="bio-info">
+            <p>In link reaction, it connects "Glycolysis" with aerobic respiration and it takes place in the matrix of "Mitochondria" and gets influenced by the enzyme called "PYRUVATE DEHYDROGENASE" + "Mg+2" ion as a cofactor.</p>
+            <p>Total no. of pyruvates per Glucose in link reaction are 2.<br>
+            Total NADH+H+ produced per Glucose in link reaction are 2.<br>
+            Total Acetyl CO-A produced per Glucose are 2.<br>
+            And evolved CO2 per Glucose in link reaction are 2.</p>
+        </div>
+
+        <div class="input-group">
+            <label>Enter Number of Pyruvates:</label>
+            <input type="number" id="link-pyr" placeholder="Enter value here..." min="1">
+        </div>
+        <button class="calc-btn" onclick="calcLink()">Calculate</button>
+        <div class="results" id="link-results">
+            <p>Total Acetyl Co-A: <span id="link-acetyl">0</span></p>
+            <p>Total NADH+H+: <span id="link-nadh">0</span></p>
+            <p>Total CO2 Evolved: <span id="link-co2">0</span></p>
+        </div>
+    </div>
+
+    <div id="KrebsCycle" class="tabcontent">
+        <h2>Krebs Cycle (Citric Acid Cycle)</h2>
+        <div class="bio-info">
+            <p>Kreb cycle is also known as "Citric acid cycle" as its first stable product is "citric acid".</p>
+            <p>Total cycles of kreb cycle per glucose are 2.<br>
+            Total NADH+H+ formed per cycle are 3.<br>
+            Total FADH2 formed per cycle is 1.<br>
+            Total ATP formed by substrate level phosphorylation is 1.<br>
+            Total CO2 evolved per kreb cycle is 2.</p>
+            <p>"Kreb cycle" process as follows:-</p>
+            <img src="Krebs-Cycle.png" alt="Krebs Cycle Diagram" class="kreb-image" onerror="this.style.display='none'">
+        </div>
+
+        <div class="input-group">
+            <label>Enter Acetyl Co-A value:</label>
+            <input type="number" id="kreb-acetyl" placeholder="Enter value here..." min="1">
+        </div>
+        <button class="calc-btn" onclick="calcKrebs()">Calculate</button>
+        <div class="results" id="kreb-results">
+            <p>Total NADH+H+ formed: <span id="kreb-nadh">0</span></p>
+            <p>Total FADH2 formed: <span id="kreb-fadh">0</span></p>
+            <p>Total CO2 evolved: <span id="kreb-co2">0</span></p>
+            <p>Total GTP/ATP formed by substrate level phosphorylation: <span id="kreb-atp">0</span></p>
+        </div>
+    </div>
+
+    <div id="ETS" class="tabcontent">
+        <h2>Electron Transport System (ETS)</h2>
+        <div class="bio-info">
+            <p>ETS is the last step of aerobic respiration which occurs in the inner membrane of "Mitochondria". There are 5 complexes which help in the process of ETS:</p>
+            <ol>
+                <li><strong>Complex-1:</strong> NADH+H+ dehydrogenase</li>
+                <li><strong>Complex-2:</strong> FADH2 dehydrogenase</li>
+                <li><strong>Complex-3:</strong> Cytochrome b-c1</li>
+                <li><strong>Complex-4:</strong> Cytochrome a-a3 or Cytochrome c-oxidase</li>
+                <li><strong>Complex-5:</strong> ATP synthetase</li>
+            </ol>
+            <p>In ETS, Complex-1 and Complex-2 work independently from each other.</p>
+            <p><strong>Process goes for "Complex-1" is:</strong><br> 
+            NADH+H+ breakdown into NAD+ + 2H+ because of NADH+H+ dehydrogenase. Now, the two protons (H+) taken by the mobile carrier "Ubiquinone" placed in the inner side inner membrane of "Mitochondria" (converts into "Ubiquinol") as hydrogens, then, it passes the electrons to "Complex-3" by removing the protons in the matrix of "Mitochondria", now, the electrons go from "Complex-3" to another mobile carrier, a protein one, "Cytochrome-c" placed on the outer side of inner membrane of "Mitochondria", it passes the electrons further to "Complex-4".</p>
+            <p>Within this process of "Complex-1" 4 protons get pumped out of "Complex-1", 4 protons from "Complex-3" and 2 protons from "Complex-4", in the inter membrane of "Mitochondria" and remaining 2 protons taken by the oxygen to get converted into water. Basically, total 10 protons get pumped by NADH+H+ in ETS.</p>
+            
+            <p><strong>Process goes for "Complex-2" is:</strong><br>
+            FADH2 breakdown into FAD+ + 2H+ because of NADH+H+ dehydrogenase. Now, the two protons (H+) taken by the mobile carrier "Ubiquinone" placed in the inner side inner membrane of "Mitochondria" (converts into "Ubiquinol") as hydrogens, then, it passes the electrons to "Complex-3" by removing the protons in the matrix of "Mitochondria", now, the electrons go from "Complex-3" to another mobile carrier, a protein one, "Cytochrome-c" placed on the outer side of inner membrane of "Mitochondria", it passes the electrons further to "Complex-4".</p>
+            <p>Within this process of "Complex-2" 4 protons from "Complex-3" and 2 protons from "Complex-4", in the inter membrane of "Mitochondria" and remaining 2 protons taken by the oxygen to get converted into water. Basically, total 6 protons get pumped by FADH2 in ETS.</p>
+            
+            <p><strong>ATP Formation:</strong><br>
+            4 protons needed to form one ATP through "Complex-5".<br>
+            For NADH+H+, 10 protons will get converted into 2.5 ATP.<br>
+            For FADH2, 6 protons will get converted into 1.5 ATP.</p>
+        </div>
+
+        <div class="input-group">
+            <label>Enter NADH+H+ value:</label>
+            <input type="number" id="ets-nadh" placeholder="Enter NADH+H+..." min="1">
+        </div>
+        <div class="input-group">
+            <label>Enter FADH2 value:</label>
+            <input type="number" id="ets-fadh" placeholder="Enter FADH2..." min="1">
+        </div>
+        <button class="calc-btn" onclick="calcETS()">Calculate</button>
+        
+        <div class="results" id="ets-results">
+            <p>Protons pumped by NADH+H+: <span id="ets-nadh-p">0</span></p>
+            <p>ATP from NADH+H+: <span id="ets-nadh-atp">0</span></p>
+            <p>Protons pumped by FADH2: <span id="ets-fadh-p">0</span></p>
+            <p>ATP from FADH2: <span id="ets-fadh-atp">0</span></p>
+            <p style="color: #c0392b; font-size: 1.2em; margin-top: 10px;">Total ETS ATP: <span id="ets-total-atp">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        // --- TAB NAVIGATION FUNCTION ---
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+        document.getElementById("defaultOpen").click();
+
+        // --- CALCULATION FUNCTIONS (BIGINT UPGRADED) ---
+        function calcGlycolysis() {
+            let val = document.getElementById('gly-pyr').value;
+            if (val === "") return; 
+            
+            try {
+                let n = BigInt(val);
+                if (n < 1n) { alert("Incorrect input! Please use positive whole numbers."); return; }
+
+                let netAtp = (n % 2n === 0n) ? n : n - 1n;
+                document.getElementById('gly-atp').innerText = (n * 2n).toString();
+                document.getElementById('gly-nadh').innerText = n.toString();
+                document.getElementById('gly-net-atp').innerText = netAtp.toString(); 
+                document.getElementById('gly-results').style.display = 'block';
+            } catch (e) {
+                alert("Incorrect input! Please use whole numbers only.");
+            }
+        }
+
+        function calcLink() {
+            let val = document.getElementById('link-pyr').value;
+            if (val === "") return;
+            
+            try {
+                let n = BigInt(val);
+                if (n < 1n) { alert("Incorrect input!"); return; }
+
+                document.getElementById('link-acetyl').innerText = n.toString();
+                document.getElementById('link-nadh').innerText = n.toString();
+                document.getElementById('link-co2').innerText = n.toString();
+                document.getElementById('link-results').style.display = 'block';
+            } catch (e) {
+                alert("Incorrect input! Please use whole numbers only.");
+            }
+        }
+
+        function calcKrebs() {
+            let val = document.getElementById('kreb-acetyl').value;
+            if (val === "") return;
+            
+            try {
+                let n = BigInt(val);
+                if (n < 1n) { alert("Incorrect input!"); return; }
+
+                document.getElementById('kreb-nadh').innerText = (n * 3n).toString();
+                document.getElementById('kreb-fadh').innerText = n.toString();
+                document.getElementById('kreb-co2').innerText = (n * 2n).toString();
+                document.getElementById('kreb-atp').innerText = n.toString();
+                document.getElementById('kreb-results').style.display = 'block';
+            } catch (e) {
+                alert("Incorrect input! Please use whole numbers only.");
+            }
+        }
+
+        function calcETS() {
+            let valN = document.getElementById('ets-nadh').value;
+            let valM = document.getElementById('ets-fadh').value;
+            if (valN === "" || valM === "") return; 
+            
+            try {
+                let n = BigInt(valN);
+                let m = BigInt(valM);
+                
+                if (n < 1n || m < 1n) { alert("Incorrect input!"); return; }
+
+                // Whole number proton math
+                document.getElementById('ets-nadh-p').innerText = (n * 10n).toString();
+                document.getElementById('ets-fadh-p').innerText = (m * 6n).toString();
+
+                // Custom logic to handle decimals with BigInts
+                function formatBigDecimal(tenths) {
+                    let whole = tenths / 10n;
+                    let remainder = tenths % 10n;
+                    if (remainder === 0n) return whole.toString();
+                    return whole.toString() + "." + remainder.toString();
+                }
+
+                // Calculate in "tenths" (e.g., 2.5 becomes 25)
+                let nadhAtpTenths = n * 25n;
+                let fadhAtpTenths = m * 15n;
+                let totalAtpTenths = nadhAtpTenths + fadhAtpTenths;
+
+                // Format back to decimal string for display
+                document.getElementById('ets-nadh-atp').innerText = formatBigDecimal(nadhAtpTenths);
+                document.getElementById('ets-fadh-atp').innerText = formatBigDecimal(fadhAtpTenths);
+                document.getElementById('ets-total-atp').innerText = formatBigDecimal(totalAtpTenths);
+
+                document.getElementById('ets-results').style.display = 'block';
+            } catch (e) {
+                alert("Incorrect input! Please use whole numbers only.");
+            }
+        }
+
+        // --- ENTER KEY SUPPORT ---
+        document.getElementById("gly-pyr").addEventListener("keypress", function(event) { if (event.key === "Enter") calcGlycolysis(); });
+        document.getElementById("link-pyr").addEventListener("keypress", function(event) { if (event.key === "Enter") calcLink(); });
+        document.getElementById("kreb-acetyl").addEventListener("keypress", function(event) { if (event.key === "Enter") calcKrebs(); });
+        
+        // ** NEW AUTO-FOCUS LOGIC FOR ETS **
+        document.getElementById("ets-nadh").addEventListener("keypress", function(event) { 
+            if (event.key === "Enter") {
+                // When you press enter on NADH, it moves the cursor to FADH2
+                document.getElementById("ets-fadh").focus();
+            } 
+        });
+        
+        // When you press enter on FADH2, it calculates the result
+        document.getElementById("ets-fadh").addEventListener("keypress", function(event) { if (event.key === "Enter") calcETS(); });
+
+        
+        // ==========================================
+        // --- BACKGROUND ANIMATION SCRIPT ---
+        // ==========================================
+        const canvas = document.getElementById('bioCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class BioParticle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5; 
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 15 + 10;
+                this.angle = Math.random() * Math.PI * 2;
+                this.spin = (Math.random() - 0.5) * 0.02;
+                this.type = Math.floor(Math.random() * 3); 
+                this.color = `rgba(41, 128, 185, ${Math.random() * 0.3 + 0.1})`; 
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.angle += this.spin;
+
+                if (this.x < -50) this.x = width + 50;
+                if (this.x > width + 50) this.x = -50;
+                if (this.y < -50) this.y = height + 50;
+                if (this.y > height + 50) this.y = -50;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.strokeStyle = this.color;
+                ctx.fillStyle = this.color;
+                ctx.lineWidth = 2;
+
+                if (this.type === 0) {
+                    ctx.beginPath();
+                    ctx.roundRect(-this.size, -this.size/2, this.size*2, this.size, this.size/2);
+                    ctx.fill();
+                } 
+                else if (this.type === 1) {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size/1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    for(let i=0; i<6; i++) {
+                        ctx.rotate(Math.PI / 3);
+                        ctx.beginPath();
+                        ctx.moveTo(this.size/1.5, 0);
+                        ctx.lineTo(this.size, 0);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.arc(this.size, 0, 2, 0, Math.PI*2);
+                        ctx.fill();
+                    }
+                } 
+                else if (this.type === 2) {
+                    for(let i = -1; i <= 1; i++) {
+                        let yOffset = i * this.size/1.5;
+                        ctx.beginPath();
+                        ctx.moveTo(-this.size, yOffset);
+                        ctx.lineTo(this.size, -yOffset);
+                        ctx.stroke();
+                        ctx.beginPath(); ctx.arc(-this.size, yOffset, 3, 0, Math.PI*2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(this.size, -yOffset, 3, 0, Math.PI*2); ctx.fill();
+                    }
+                }
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 40; i++) {
+            particles.push(new BioParticle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+    </script>
+</body>
+</html>
